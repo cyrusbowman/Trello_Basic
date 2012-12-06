@@ -1,0 +1,36 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    
+	<Button 
+	    android:id="@+id/getCard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Get Test Board"/>
+	<Button 
+	    android:id="@+id/putCard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/getCard"
+        android:text="Send card"/>
+	
+	
+	<TextView
+        android:id="@+id/tvLists"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/getCard"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="10dp"
+        android:text="" />
+	<TextView
+        android:id="@+id/tvCards"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/putCard"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
+        android:text="" />
+</RelativeLayout>
