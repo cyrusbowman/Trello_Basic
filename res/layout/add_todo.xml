@@ -1,0 +1,43 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+	<EditText
+	    android:id="@+id/title"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:hint="Title"
+	    android:inputType="text"
+	    android:layout_alignParentTop="true" />
+	<EditText
+	    android:id="@+id/description"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:hint="Description"
+	    android:inputType="textMultiLine"
+	    android:layout_below="@id/title"
+	    android:paddingTop="20dp" />
+	<CheckBox android:id="@+id/chkComplete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Complete"
+        android:layout_below="@id/description"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"/>
+	
+	<Button 
+	    android:id="@+id/add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/chkComplete"/>
+	<Button 
+	    android:id="@+id/cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/getCard"
+        android:text="Cancel"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/chkComplete"/>
+</RelativeLayout>

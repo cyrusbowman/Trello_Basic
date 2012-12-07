@@ -15,6 +15,12 @@
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/getCard"
         android:text="Send card"/>
+	<Button 
+	    android:id="@+id/showTodo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/putCard"
+        android:text="Show"/>
 	
 	
 	<TextView

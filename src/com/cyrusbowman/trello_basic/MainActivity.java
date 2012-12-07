@@ -26,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,7 +38,7 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity implements OnClickListener {
 
-	private Button getCards, putCard;
+	private Button getCards, putCard, show;
 	private TextView tvLists, tvCards;
 
 	@Override
@@ -50,6 +51,9 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		putCard = (Button) findViewById(R.id.putCard);
 		putCard.setOnClickListener(this);
+		
+		show = (Button) findViewById(R.id.showTodo);
+		show.setOnClickListener(this);
 
 		tvLists = (TextView) findViewById(R.id.tvLists);
 		tvCards = (TextView) findViewById(R.id.tvCards);
@@ -110,6 +114,10 @@ public class MainActivity extends Activity implements OnClickListener {
 
 				}
 			}).start();
+		} else if(arg0.getId() == R.id.showTodo){
+			Log.d("UI", "Starting");
+			Intent i = new Intent("com.cyrusbowman.trello_basic.TODOLIST");
+			startActivity(i);
 		}
 	}
 
