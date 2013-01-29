@@ -1,7 +1,6 @@
 package com.cyrusbowman.trello_basic;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -23,12 +22,12 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 
 import android.app.ListActivity;
 import android.content.Context;
@@ -52,27 +51,26 @@ import android.widget.TextView;
 
 public class TodoList extends ListActivity {
 
-
 	private DatabaseHandler db;
-	
+
 	private List<TodoItem> todoItems = new ArrayList<TodoItem>();
 
 	private String returnIntent = "com.mywayrtk.datatransfer.SETTINGS";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		
-		//Load todo items from sql
+
+		// Load todo items from sql
 		db = new DatabaseHandler(this);
-//		db.clearTable();
-//		SharedPreferences prefs = PreferenceManager
-//				.getDefaultSharedPreferences(getApplicationContext());
-//		SharedPreferences.Editor editor = prefs.edit();
-//		editor.putString("LastSync", "null");
-//		editor.commit();
-		
-		
+		// db.clearTable();
+		// SharedPreferences prefs = PreferenceManager
+		// .getDefaultSharedPreferences(getApplicationContext());
+		// SharedPreferences.Editor editor = prefs.edit();
+		// editor.putString("LastSync", "null");
+		// editor.commit();
+
 		fill();
 	}
 
@@ -99,56 +97,66 @@ public class TodoList extends ListActivity {
 		return false;
 	}
 
-	private void fill(){
+	private void fill() {
 		this.todoItems.clear();
-		todoItems = db.getAllTodos();    
-		TodoAdapter adapter = new TodoAdapter(this,R.layout.todo_item, this.todoItems);
+		todoItems = db.getAllTodos();
+		TodoAdapter adapter = new TodoAdapter(this, R.layout.todo_item,
+				this.todoItems);
 		this.setListAdapter(adapter);
-		
-        for (TodoItem cn : todoItems) {
-            String log = "Id: "+cn.getId()+" ,Title: " + cn.getTitle() + " ,Desc: " + cn.getDescription();
-            Log.d("Name: ", log);
-        }	
+
+		for (TodoItem cn : todoItems) {
+			String log = "Id: " + cn.getId() + " ,Title: " + cn.getTitle()
+					+ " ,Desc: " + cn.getDescription() + ",Synced:"
+					+ Integer.toString(cn.getSynced());
+			Log.d("Name: ", log);
+		}
 	}
-	
-	private void syncItems(){
-		//Add all online items to db
-		
+
+	private void syncItems() {
+		// Add all online items to db
+
 		SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(getApplicationContext());
 		String since = prefs.getString("LastSync", "null");
 		Log.d("Requst sicne", since);
-		new DownloadBoard().execute("https://api.trello.com/1/board/50c1a8613a9a77a20400ec73/actions?key=b1ae1192adda1b5b61563d30d7ab403b&token=9f4879493d59a4f6779a1e024b53abb0b85700c5f69b46bc63f40505ca93c1e2&filter=createCard,updateCard&since="+since);
+		new DownloadBoard()
+				.execute("https://api.trello.com/1/board/50c1a8613a9a77a20400ec73/actions?key=b1ae1192adda1b5b61563d30d7ab403b&token=9f4879493d59a4f6779a1e024b53abb0b85700c5f69b46bc63f40505ca93c1e2&filter=createCard,updateCard&since="
+						+ since);
 	}
 
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		int selectionRowID = (int) id;
-		
-		String selectedFileString = this.todoItems.get(selectionRowID).getTitle();
-		int done = this.todoItems.get(selectionRowID).getDone();
 
-//		if (selectedFileString.equals(".")) {
-//			// Refresh, wont happen ever
-//			this.browseTo(this.currentDirectory);
-//		} else if (fileType == 3) {
-//			this.upOneLevel();
-//		} else {
-//			File clickedFile = null;
-//			switch (this.displayMode) {
-//			case RELATIVE:
-//				clickedFile = new File(this.currentDirectory.getAbsolutePath()
-//						+ this.todoItems.get(selectionRowID).getName());
-//				break;
-//			case ABSOLUTE:
-//				clickedFile = new File(this.directories.get(selectionRowID)
-//						.getName());
-//				break;
-//			}
-//			if (clickedFile != null)
-//				this.browseTo(clickedFile);
-//		}
-		
+		String todoItemId = this.todoItems.get(selectionRowID).getId();
+		Bundle data = new Bundle();
+		data.putString("todoId", todoItemId);
+		Intent i = new Intent("com.cyrusbowman.trello_basic.EDITTODO");
+		i.putExtras(data);
+		startActivity(i);
+		finish();
+
+		// if (selectedFileString.equals(".")) {
+		// // Refresh, wont happen ever
+		// this.browseTo(this.currentDirectory);
+		// } else if (fileType == 3) {
+		// this.upOneLevel();
+		// } else {
+		// File clickedFile = null;
+		// switch (this.displayMode) {
+		// case RELATIVE:
+		// clickedFile = new File(this.currentDirectory.getAbsolutePath()
+		// + this.todoItems.get(selectionRowID).getName());
+		// break;
+		// case ABSOLUTE:
+		// clickedFile = new File(this.directories.get(selectionRowID)
+		// .getName());
+		// break;
+		// }
+		// if (clickedFile != null)
+		// this.browseTo(clickedFile);
+		// }
+
 	}
 
 	public class TodoAdapter extends ArrayAdapter<TodoItem> {
@@ -158,7 +166,7 @@ public class TodoList extends ListActivity {
 		Context context;
 
 		// Initialize adapter
-		public TodoAdapter(Context context, int resource,List<TodoItem> items) {
+		public TodoAdapter(Context context, int resource, List<TodoItem> items) {
 			super(context, resource, items);
 			this.resource = resource;
 		}
@@ -179,7 +187,7 @@ public class TodoList extends ListActivity {
 			} else {
 				listline = (LinearLayout) convertView;
 			}
-			
+
 			// Get the text boxes from the listitem.xml file
 			TextView todoTitle = (TextView) listline
 					.findViewById(R.id.todoTitle);
@@ -187,29 +195,30 @@ public class TodoList extends ListActivity {
 					.findViewById(R.id.iconDoing);
 			ImageView iconDone = (ImageView) listline
 					.findViewById(R.id.iconDone);
-			
+
 			// Assign the appropriate data from our alert object above
-//			fileName.setText(" " + aDirectory.getName().replaceFirst("/", ""));
-//			if (aDirectory.getType() == 3) {
-//				// upfolder
-//				directoryIcon.setVisibility(8);
-//				fileIcon.setVisibility(8);
-//				upFolder.setVisibility(0);
-//			} else if (aDirectory.getType() == 0) {
-//				// File
-//				// directoryIcon.setImageResource(R.drawable.ic_launcher);
-//				directoryIcon.setVisibility(8);
-//				upFolder.setVisibility(8);
-//				fileIcon.setVisibility(0);
-//			} else {
-//				// Directory
-//				directoryIcon.setVisibility(0);
-//				upFolder.setVisibility(8);
-//				fileIcon.setVisibility(8);
-//			}
-			
+			// fileName.setText(" " + aDirectory.getName().replaceFirst("/",
+			// ""));
+			// if (aDirectory.getType() == 3) {
+			// // upfolder
+			// directoryIcon.setVisibility(8);
+			// fileIcon.setVisibility(8);
+			// upFolder.setVisibility(0);
+			// } else if (aDirectory.getType() == 0) {
+			// // File
+			// // directoryIcon.setImageResource(R.drawable.ic_launcher);
+			// directoryIcon.setVisibility(8);
+			// upFolder.setVisibility(8);
+			// fileIcon.setVisibility(0);
+			// } else {
+			// // Directory
+			// directoryIcon.setVisibility(0);
+			// upFolder.setVisibility(8);
+			// fileIcon.setVisibility(8);
+			// }
+
 			todoTitle.setText(aTodo.getTitle());
-			if(aTodo.getDone() == 1){
+			if (aTodo.getDone() == 1) {
 				iconDoing.setVisibility(8);
 				iconDone.setVisibility(0);
 			} else {
@@ -227,16 +236,17 @@ public class TodoList extends ListActivity {
 		db.close();
 		super.onDestroy();
 	}
-	
-	
-	
+
 	private class DownloadBoard extends AsyncTask<String, Integer, JSONArray> {
 		protected JSONArray doInBackground(String... urls) {
 			HttpResponse response = getBoard(urls[0]);
 
 			String result = "";
 			try {
-				InputStream is = response.getEntity().getContent(); //Error here if no internet
+				InputStream is = response.getEntity().getContent(); // Error
+																	// here if
+																	// no
+																	// internet
 				result = convertStreamToString(is);
 			} catch (IllegalStateException e) {
 				// TODO Auto-generated catch block
@@ -258,24 +268,24 @@ public class TodoList extends ListActivity {
 		}
 
 		protected void onPostExecute(JSONArray actions) {
-			//Sync cards from web
+			// Sync cards from web
 			for (int i = 0; i < actions.length(); i++) {
 				String date = null;
 				JSONObject card = null;
 				JSONObject action;
 				JSONObject data;
-				
+
 				String cardId = "";
 				String desc = "";
-		        String title = "";
+				String title = "";
 				try {
 					action = actions.getJSONObject(i);
 					data = action.getJSONObject("data");
 					date = action.getString("date");
-					
+
 					card = data.getJSONObject("card");
 					cardId = card.getString("id");
-		        	title = card.getString("name");
+					title = card.getString("name");
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -286,91 +296,159 @@ public class TodoList extends ListActivity {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
+
 				TodoItem fromWeb = new TodoItem(cardId, title, desc, date, 0, 1);
 				db.syncTodo(fromWeb);
 			}
-			
-			//Sync unsynced todos
-			List<TodoItem> todos = new ArrayList<TodoItem>();
-			todos = db.getAllTodos();    
-	        for (final TodoItem todo : todos) {
-	            if(todo.getSynced() == 0){
-	            	if(todo.getId().contains("-")){
-	            		//New card
-	            		new Thread(new Runnable() {
-	        				public void run() {
-	        					Log.d("Sending card", "New card sent to trello");
-	        					HttpClient client = new DefaultHttpClient();
-	        					HttpPost post = new HttpPost(
-	        							"https://api.trello.com/1/cards");
-	        					List<BasicNameValuePair> results = new ArrayList<BasicNameValuePair>();
-	        					results.add(new BasicNameValuePair("key",
-	        							"b1ae1192adda1b5b61563d30d7ab403b"));
-	        					results.add(new BasicNameValuePair("token",
-	        							"9f4879493d59a4f6779a1e024b53abb0b85700c5f69b46bc63f40505ca93c1e2"));
-	        					results.add(new BasicNameValuePair("idList",
-	        							"50c1a8613a9a77a20400ec74"));
-	        					results.add(new BasicNameValuePair("name",todo.getTitle()));
-	        					results.add(new BasicNameValuePair("desc",todo.getDescription()));
 
-	        					try {
-	        						post.setEntity(new UrlEncodedFormEntity(results));
-	        					} catch (UnsupportedEncodingException e) {
-	        						// Auto-generated catch block
-	        						Log.e("Log Thread", "An error has occurred", e);
-	        					}
-	        					try {
-	        						HttpResponse response = client.execute(post);
-	        						String result = "";
-	        						try {
-	        							InputStream is = response.getEntity().getContent(); //Error here if no internet
-	        							result = convertStreamToString(is);
-	        						} catch (IllegalStateException e) {
-	        							// TODO Auto-generated catch block
-	        							e.printStackTrace();
-	        						} catch (IOException e) {
-	        							// TODO Auto-generated catch block
-	        							e.printStackTrace();
-	        						}
-	        						Log.d("Result2:", result);
-	        						JSONObject json;
-	        						String newId = null;
-	        						try {
-	        							json = new JSONObject(result);
-	        							newId = json.getString("id");
-	        						} catch (JSONException e) {
-	        							// TODO Auto-generated catch block
-	        							e.printStackTrace();
-	        						}
-	        						if(newId != null){
-	        							todo.setSynced(1);
-	        							db.updateTodo(todo);
-	        							db.updateTodoId(todo.getId(), newId);
-	        						}
-	        					} catch (ClientProtocolException e) {
-	        						// Auto-generated catch block
-	        						Log.e("Log Thread", "client protocol exception", e);
-	        					} catch (IOException e) {
-	        						// Auto-generated catch block
-	        						Log.e("Log Thread", "io exception", e);
-	        					}
-	        				}
-	        			}).start();
-	            	} else {
-	            		//Update card
-	            		
-	            	}
-	            }
-	        }	
-			
-			SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-	        dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT"));
-	        String theDate = dateFormatGmt.format(new Date());
-	        theDate = (theDate.replace(" ", "T") + "Z");
-	        Log.d("LastSync:",theDate);
-	      
-	        
+			// Sync unsynced todos
+			List<TodoItem> todos = new ArrayList<TodoItem>();
+			todos = db.getAllTodos();
+			for (final TodoItem todo : todos) {
+				if (todo.getSynced() == 0) {
+					if (todo.getId().contains("-")) {
+						// New card
+						new Thread(new Runnable() {
+							public void run() {
+								Log.d("Sending card", "New card sent to trello");
+								HttpClient client = new DefaultHttpClient();
+								HttpPost post = new HttpPost(
+										"https://api.trello.com/1/cards");
+								List<BasicNameValuePair> results = new ArrayList<BasicNameValuePair>();
+								results.add(new BasicNameValuePair("key",
+										"b1ae1192adda1b5b61563d30d7ab403b"));
+								results.add(new BasicNameValuePair("token",
+										"9f4879493d59a4f6779a1e024b53abb0b85700c5f69b46bc63f40505ca93c1e2"));
+								results.add(new BasicNameValuePair("idList",
+										"50c1a8613a9a77a20400ec74"));
+								results.add(new BasicNameValuePair("name", todo
+										.getTitle()));
+								results.add(new BasicNameValuePair("desc", todo
+										.getDescription()));
+
+								try {
+									post.setEntity(new UrlEncodedFormEntity(
+											results));
+								} catch (UnsupportedEncodingException e) {
+									// Auto-generated catch block
+									Log.e("Log Thread",
+											"An error has occurred", e);
+								}
+								try {
+									HttpResponse response = client
+											.execute(post);
+									String result = "";
+									try {
+										InputStream is = response.getEntity()
+												.getContent(); // Error here if
+																// no internet
+										result = convertStreamToString(is);
+									} catch (IllegalStateException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									Log.d("Result2:", result);
+									JSONObject json;
+									String newId = null;
+									try {
+										json = new JSONObject(result);
+										newId = json.getString("id");
+									} catch (JSONException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									if (newId != null) {
+										todo.setSynced(1);
+										db.updateTodo(todo);
+										db.updateTodoId(todo.getId(), newId);
+									}
+								} catch (ClientProtocolException e) {
+									// Auto-generated catch block
+									Log.e("Log Thread",
+											"client protocol exception", e);
+								} catch (IOException e) {
+									// Auto-generated catch block
+									Log.e("Log Thread", "io exception", e);
+								}
+							}
+						}).start();
+					} else {
+						// Update card
+						new Thread(new Runnable() {
+							public void run() {
+								Log.d("Updating card", "Card updated to trello");
+								HttpClient client = new DefaultHttpClient();
+
+								HttpPut put = new HttpPut(
+										"https://api.trello.com/1/cards/"
+												+ todo.getId());
+
+								List<BasicNameValuePair> results = new ArrayList<BasicNameValuePair>();
+								results.add(new BasicNameValuePair("key",
+										"b1ae1192adda1b5b61563d30d7ab403b"));
+								results.add(new BasicNameValuePair("token",
+										"9f4879493d59a4f6779a1e024b53abb0b85700c5f69b46bc63f40505ca93c1e2"));
+								results.add(new BasicNameValuePair("name", todo
+										.getTitle()));
+								results.add(new BasicNameValuePair("desc", todo
+										.getDescription()));
+
+								try {
+									String result = "";
+									try {
+										put.setEntity(new UrlEncodedFormEntity(
+												results));
+										HttpResponse response = client
+												.execute(put);
+										InputStream is = response.getEntity()
+												.getContent(); // Error here if
+																// no internet
+										result = convertStreamToString(is);
+									} catch (IllegalStateException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									Log.d("Result3:", result);
+									// JSONObject json;
+									// String newId = null;
+									// try {
+									// json = new JSONObject(result);
+									// newId = json.getString("id");
+									// } catch (JSONException e) {
+									// // TODO Auto-generated catch block
+									// e.printStackTrace();
+									// }
+									// if (newId != null) {
+									// todo.setSynced(1);
+									// db.updateTodo(todo);
+									// db.updateTodoId(todo.getId(), newId);
+									// }
+								} catch (Exception e) {
+									// Auto-generated catch block
+									Log.e("Log Thread",
+											"client protocol exception", e);
+								}
+								todo.setSynced(1);
+								db.updateTodo(todo);
+							}
+						}).start();
+					}
+				}
+			}
+
+			SimpleDateFormat dateFormatGmt = new SimpleDateFormat(
+					"yyyy-MM-dd HH:mm:ss.SSS");
+			dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT"));
+			String theDate = dateFormatGmt.format(new Date());
+			theDate = (theDate.replace(" ", "T") + "Z");
+			Log.d("LastSync:", theDate);
+
 			SharedPreferences prefs = PreferenceManager
 					.getDefaultSharedPreferences(getApplicationContext());
 			SharedPreferences.Editor editor = prefs.edit();
